@@ -3681,6 +3681,7 @@ impl Bank {
                         .collect::<Vec<_>>()
                 });
 
+            // todo 
             let (accounts_to_store, transactions) = collect_accounts_to_store(
                 sanitized_txs,
                 &maybe_transaction_refs,

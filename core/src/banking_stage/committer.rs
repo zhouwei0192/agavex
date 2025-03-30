@@ -81,7 +81,7 @@ impl Committer {
             .zip(batch.sanitized_transactions())
             .filter_map(|(processing_result, tx)| processing_result.was_processed().then_some(tx))
             .collect_vec();
-
+        // todo 
         let (commit_results, commit_time_us) = measure_us!(bank.commit_transactions(
             batch.sanitized_transactions(),
             processing_results,

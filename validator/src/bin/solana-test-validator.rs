@@ -49,7 +49,7 @@ enum Output {
     Log,
     Dashboard,
 }
-
+// cargo run --bin solana-test-validator -- --ledger /Users/zhouwei/Desktop/ledger/localhost-data
 fn main() {
     let default_args = cli::DefaultTestArgs::new();
     let version = solana_version::version!();
@@ -64,6 +64,7 @@ fn main() {
     };
 
     let ledger_path = value_t_or_exit!(matches, "ledger_path", PathBuf);
+    // let ledger_path = PathBuf::from("/Users/zhouwei/Desktop/ledger/localhost-data");
     let reset_ledger = matches.is_present("reset");
 
     let indexes: HashSet<AccountIndex> = matches

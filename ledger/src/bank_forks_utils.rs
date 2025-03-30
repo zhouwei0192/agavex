@@ -219,6 +219,9 @@ pub fn load_bank_forks(
             .for_each(|hard_fork_slot| root_bank.register_hard_fork(*hard_fork_slot));
     }
 
+    let binding = bank_forks.clone();
+    let bank = binding.read().unwrap().banks();
+    
     Ok((bank_forks, leader_schedule_cache, starting_snapshot_hashes))
 }
 
