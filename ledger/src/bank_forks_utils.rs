@@ -220,8 +220,13 @@ pub fn load_bank_forks(
     }
 
     let binding = bank_forks.clone();
-    let bank = binding.read().unwrap().banks();
-    
+    // let bank = binding.read().unwrap().banks();
+    // for (i, v) in binding.read().unwrap().banks() {
+    //     println!("slot: {}", i);
+    //     let a = v.accounts();
+        
+    //     // println!("{:?}", v);
+    // }
     Ok((bank_forks, leader_schedule_cache, starting_snapshot_hashes))
 }
 

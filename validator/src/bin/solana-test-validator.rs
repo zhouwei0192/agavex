@@ -49,7 +49,15 @@ enum Output {
     Log,
     Dashboard,
 }
-// cargo run --bin solana-test-validator -- --ledger /Users/zhouwei/Desktop/ledger/localhost-data
+/*
+
+cargo run --bin solana-test-validator -- --ledger /ssd1/mnt/ledger --warp-slot 330328380 --limit-ledger-size 1000000
+
+
+*/ 
+
+
+
 fn main() {
     let default_args = cli::DefaultTestArgs::new();
     let version = solana_version::version!();
