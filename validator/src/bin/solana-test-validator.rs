@@ -52,6 +52,7 @@ enum Output {
 /*
 
 cargo run --bin solana-test-validator -- --ledger /ssd1/mnt/ledger --warp-slot 330328380 --limit-ledger-size 1000000
+cargo run --bin solana-test-validator -- --ledger /Users/zhouwei/Desktop/ledger/localhost-data --limit-ledger-size 1000000
 
 */ 
 

@@ -346,7 +346,9 @@ pub struct AccountData {
     // pub data: Vec<u8>
 }
 pub fn insert_account(genesis_config: &mut GenesisConfig) {
-    let path = Path::new("/Users/zhouwei/Desktop/ledger/dex-account");
+    let path = Path::new("/ssd1/mnt/dex-account");
+    // let path = Path::new("/Users/zhouwei/Desktop/ledger/dex-account");
+    
     println!("start");
     for entry in path.read_dir().unwrap() {
         let file_path = path.join(entry.unwrap().file_name()); // 获取条目
