@@ -203,8 +203,8 @@ pub fn load_bank_forks(
             let a = banks.get(&0).unwrap().accounts().accounts_db.clone();
             let ac = &a.accounts_cache;
 
-            // let path = Path::new("/ssd1/mnt/dex-account");
-            let path = Path::new("/Users/zhouwei/Desktop/ledger/dex-account");
+            let path = Path::new("/ssd1/mnt/dex-account");
+            // let path = Path::new("/Users/zhouwei/Desktop/ledger/dex-account");
         
             println!("start");
             let mut i = 0;

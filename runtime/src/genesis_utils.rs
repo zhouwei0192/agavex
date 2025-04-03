@@ -16,7 +16,7 @@ use {
     },
     solana_stake_program::stake_state,
     solana_vote_program::vote_state,
-    std::{borrow::Borrow, fs::OpenOptions, io::Read, path::Path},
+    std::borrow::Borrow,
 };
 
 // Default amount received by the validator
