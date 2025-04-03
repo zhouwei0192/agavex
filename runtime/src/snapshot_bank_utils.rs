@@ -711,6 +711,8 @@ fn rebuild_bank_from_snapshot(
         )?)
     })?;
 
+    // println!("len: {}", bank.accounts().);
+
     verify_epoch_stakes(&bank)?;
 
     let status_cache_path = bank_snapshot

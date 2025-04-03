@@ -8,10 +8,7 @@ use {
         entry_notifier_service::EntryNotifierSender,
         leader_schedule_cache::LeaderScheduleCache,
         use_snapshot_archives_at_startup::{self, UseSnapshotArchivesAtStartup},
-    },
-    log::*,
-    solana_accounts_db::accounts_update_notifier_interface::AccountsUpdateNotifier,
-    solana_runtime::{
+    }, log::*, solana_accounts_db::accounts_update_notifier_interface::AccountsUpdateNotifier, solana_pubkey::Pubkey, solana_runtime::{
         bank_forks::BankForks,
         snapshot_archive_info::{
             FullSnapshotArchiveInfo, IncrementalSnapshotArchiveInfo, SnapshotArchiveInfoGetter,
@@ -20,14 +17,9 @@ use {
         snapshot_config::SnapshotConfig,
         snapshot_hash::{FullSnapshotHash, IncrementalSnapshotHash, StartingSnapshotHashes},
         snapshot_utils,
-    },
-    solana_sdk::genesis_config::GenesisConfig,
-    std::{
-        path::PathBuf,
-        result,
-        sync::{atomic::AtomicBool, Arc, RwLock},
-    },
-    thiserror::Error,
+    }, solana_sdk::{account::AccountSharedData, genesis_config::GenesisConfig}, std::{
+        fs::OpenOptions, io::Read, path::{Path, PathBuf}, result, sync::{atomic::AtomicBool, Arc, RwLock}
+    }, thiserror::Error
 };
 
 #[derive(Error, Debug)]
@@ -183,6 +175,7 @@ pub fn load_bank_forks(
                 accounts_update_notifier,
                 exit,
             )?;
+            // println!("aaaaa");
             (bank_forks, Some(starting_snapshot_hashes))
         } else {
             info!("Processing ledger from genesis");
@@ -203,6 +196,53 @@ pub fn load_bank_forks(
                 .root_bank()
                 .set_startup_verification_complete();
 
+            
+            let cloned_bank_forks = bank_forks.clone();
+            let bank = cloned_bank_forks.write().unwrap();
+            let banks = bank.banks();
+            let a = banks.get(&0).unwrap().accounts().accounts_db.clone();
+            let ac = &a.accounts_cache;
+
+            // let path = Path::new("/ssd1/mnt/dex-account");
+            let path = Path::new("/Users/zhouwei/Desktop/ledger/dex-account");
+        
+            println!("start");
+            let mut i = 0;
+            for entry in path.read_dir().unwrap() {
+                let file_path = path.join(entry.unwrap().file_name()); // 获取条目
+                let mut data = OpenOptions::new()
+                    .read(true)
+                    .write(false)
+                    .create(false)
+                    .open(&file_path).unwrap();
+        
+                let file_size = std::fs::metadata(&file_path).unwrap().len() as usize;
+                let mut buf = Vec::with_capacity(file_size);
+                data.read_to_end(&mut buf).unwrap();
+        
+        
+                let data_len = u32::from_le_bytes(buf[0..4].try_into().unwrap()) as usize;
+        
+                let mut offset = 4usize;
+                loop {
+                    if offset >= data_len {
+                        break;
+                    }
+        
+                    let next = offset + 129;
+                    let a = bincode::deserialize::<AccountData>(&buf[offset..next]).unwrap();
+                    let data_len = a.data_len as usize;
+                    offset = next + data_len;
+                    ac.store(
+                        0, 
+                        &a.pubkey, 
+                        AccountSharedData::new_data(a.lamports, &buf[next..offset].to_vec(), &a.owner).unwrap()
+                    );
+                }
+                i += 1;
+                println!("process file: {}", i);
+            }
+
             (bank_forks, None)
         };
 
@@ -220,15 +260,80 @@ pub fn load_bank_forks(
     }
 
     let binding = bank_forks.clone();
-    // let bank = binding.read().unwrap().banks();
-    // for (i, v) in binding.read().unwrap().banks() {
-    //     println!("slot: {}", i);
-    //     let a = v.accounts();
-        
-    //     // println!("{:?}", v);
-    // }
     Ok((bank_forks, leader_schedule_cache, starting_snapshot_hashes))
 }
+
+
+
+#[derive(PartialEq, serde::Serialize, serde::Deserialize, Eq, Clone, Default)]
+pub struct AccountData {
+    pub write_version: u64,
+    /// key for the account
+    pub data_len: u64,
+    pub pubkey: Pubkey,
+    /// lamports in the account
+    pub lamports: u64,
+    /// the epoch at which this account will next owe rent
+    pub rent_epoch: u64,
+    /// the program that owns this account. If executable, the program that loads this account.
+    pub owner: Pubkey,
+    /// this account's data contains a loaded program (and is now read-only)
+    pub executable: bool,
+    pub hash: [u8; 32],
+    // pub data: Vec<u8>
+}
+// pub fn insert_account(accounts_cache: &mut AccountsCache) {
+//     let path = Path::new("/ssd1/mnt/dex-account");
+//     // let path = Path::new("/Users/zhouwei/Desktop/ledger/dex-account");
+
+//     println!("start");
+//     let mut i = 0;
+//     for entry in path.read_dir().unwrap() {
+//         let file_path = path.join(entry.unwrap().file_name()); // 获取条目
+//         // println!("file path: {}", file_path.to_str().unwrap());
+//         let mut data = OpenOptions::new()
+//             .read(true)
+//             .write(false)
+//             .create(false)
+//             .open(&file_path).unwrap();
+
+//         let file_size = std::fs::metadata(&file_path).unwrap().len() as usize;
+//         let mut buf = Vec::with_capacity(file_size);
+//         data.read_to_end(&mut buf).unwrap();
+
+
+//         // let mut list = Vec::with_capacity(10000);
+//         let data_len = u32::from_le_bytes(buf[0..4].try_into().unwrap()) as usize;
+
+//         let mut offset = 4usize;
+//         loop {
+//             if offset >= data_len {
+//                 break;
+//             }
+
+//             let next = offset + 129;
+//             let a = bincode::deserialize::<AccountData>(&buf[offset..next]).unwrap();
+//             let data_len = a.data_len as usize;
+//             offset = next + data_len;
+//             // list.push((
+//             //     a,
+//             //     buf[next..offset].to_vec()
+//             // ));
+
+//             // genesis_config.accounts.insert(a.pubkey, Account {
+//             //     lamports: a.lamports,
+//             //     data: buf[next..offset].to_vec(),
+//             //     owner: a.owner,
+//             //     executable: a.executable,
+//             //     rent_epoch: a.rent_epoch,
+//             // });
+//         }
+//         i += 1;
+//         println!("process file: {}", i);
+//     }
+// }
+
+
 
 #[allow(clippy::too_many_arguments)]
 fn bank_forks_from_snapshot(
