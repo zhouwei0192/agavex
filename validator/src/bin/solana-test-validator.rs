@@ -53,10 +53,7 @@ enum Output {
 
 cargo run --bin solana-test-validator -- --ledger /ssd1/mnt/ledger --warp-slot 330328380 --limit-ledger-size 1000000
 
-
 */ 
-
-
 
 fn main() {
     let default_args = cli::DefaultTestArgs::new();
@@ -472,6 +469,10 @@ fn main() {
             exit(1);
         })
         .deactivate_features(&features_to_deactivate);
+
+    
+    // genesis.add_account(address, account);
+
 
     genesis.rpc_config(JsonRpcConfig {
         enable_rpc_transaction_history: true,
