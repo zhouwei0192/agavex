@@ -1497,7 +1497,7 @@ pub struct AccountsDb {
 
     write_cache_limit_bytes: Option<u64>,
 
-    sender_bg_hasher: RwLock<Option<Sender<Vec<Arc<CachedAccount>>>>>,
+    pub sender_bg_hasher: RwLock<Option<Sender<Vec<Arc<CachedAccount>>>>>,
     read_only_accounts_cache: ReadOnlyAccountsCache,
 
     /// distribute the accounts across storage lists
@@ -6544,6 +6544,7 @@ impl AccountsDb {
             .unzip();
 
         // hash this accounts in bg
+        ////  todo 
         if let Some(sender) = self.sender_bg_hasher.read().unwrap().as_ref() {
             let _ = sender.send(cached_accounts);
         };

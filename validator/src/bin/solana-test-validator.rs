@@ -52,7 +52,7 @@ enum Output {
 /*
 
 cargo run --bin solana-test-validator -- --ledger /ssd1/mnt/ledger --warp-slot 330328380 --limit-ledger-size 1000000
-cargo run --bin solana-test-validator -- --ledger /Users/zhouwei/Desktop/ledger/localhost-data --limit-ledger-size 1000000
+cargo run --bin solana-test-validator -- --ledger /Users/zhouwei/Desktop/ledger/localhost-data --limit-ledger-size 1000000 --reset
 
 */ 
 
@@ -69,8 +69,10 @@ fn main() {
         Output::Dashboard
     };
 
-    let ledger_path = value_t_or_exit!(matches, "ledger_path", PathBuf);
+    // let ledger_path = value_t_or_exit!(matches, "ledger_path", PathBuf);
     // let ledger_path = PathBuf::from("/Users/zhouwei/Desktop/ledger/localhost-data");
+    let ledger_path = PathBuf::from("/Users/zhouwei/Desktop/ledger/test-data");
+
     let reset_ledger = matches.is_present("reset");
 
     let indexes: HashSet<AccountIndex> = matches
