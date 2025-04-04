@@ -346,6 +346,8 @@ pub struct AccountData {
     // pub data: Vec<u8>
 }
 pub fn insert_account(genesis_config: &mut GenesisConfig) {
+
+    
     let path = std::path::Path::new("/ssd1/mnt/dex-account");
     // let path = std::path::Path::new("/Users/zhouwei/Desktop/ledger/dex-account");
 
