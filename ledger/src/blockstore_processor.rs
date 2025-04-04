@@ -7,25 +7,12 @@ use {
         leader_schedule_cache::LeaderScheduleCache,
         token_balances::collect_token_balances,
         use_snapshot_archives_at_startup::UseSnapshotArchivesAtStartup,
-    },
-    chrono_humanize::{Accuracy, HumanTime, Tense},
-    crossbeam_channel::Sender,
-    itertools::Itertools,
-    log::*,
-    rayon::{prelude::*, ThreadPool},
-    scopeguard::defer,
-    solana_accounts_db::{
+    }, chrono_humanize::{Accuracy, HumanTime, Tense}, crossbeam_channel::Sender, itertools::Itertools, log::*, rayon::{prelude::*, ThreadPool}, scopeguard::defer, solana_accounts_db::{
         accounts_db::AccountsDbConfig, accounts_update_notifier_interface::AccountsUpdateNotifier,
         epoch_accounts_hash::EpochAccountsHash,
-    },
-    solana_cost_model::cost_model::CostModel,
-    solana_entry::entry::{
+    }, solana_cost_model::cost_model::CostModel, solana_entry::entry::{
         self, create_ticks, Entry, EntrySlice, EntryType, EntryVerificationStatus, VerifyRecyclers,
-    },
-    solana_measure::{measure::Measure, measure_us},
-    solana_metrics::datapoint_error,
-    solana_rayon_threadlimit::get_max_thread_count,
-    solana_runtime::{
+    }, solana_measure::{measure::Measure, measure_us}, solana_metrics::datapoint_error, solana_rayon_threadlimit::get_max_thread_count, solana_runtime::{
         accounts_background_service::SnapshotRequestKind,
         bank::{Bank, PreCommitResult, TransactionBalancesSet},
         bank_forks::{BankForks, SetRootError},
@@ -38,31 +25,18 @@ use {
         snapshot_controller::SnapshotController,
         transaction_batch::{OwnedOrBorrowed, TransactionBatch},
         vote_sender_types::ReplayVoteSender,
-    },
-    solana_runtime_transaction::{
+    }, solana_runtime_transaction::{
         runtime_transaction::RuntimeTransaction, transaction_with_meta::TransactionWithMeta,
-    },
-    solana_sdk::{
-        clock::{Slot, MAX_PROCESSING_AGE},
-        genesis_config::GenesisConfig,
-        hash::Hash,
-        pubkey::Pubkey,
-        signature::{Keypair, Signature},
-        transaction::{
+    }, solana_sdk::{
+        account::WritableAccount, clock::{Slot, MAX_PROCESSING_AGE}, genesis_config::GenesisConfig, hash::Hash, pubkey::Pubkey, signature::{Keypair, Signature}, transaction::{
             Result, SanitizedTransaction, TransactionError, TransactionVerificationMode,
             VersionedTransaction,
-        },
-    },
-    solana_svm::{
+        }
+    }, solana_svm::{
         transaction_commit_result::{TransactionCommitResult, TransactionCommitResultExtensions},
         transaction_processing_result::{ProcessedTransaction, TransactionProcessingResult},
         transaction_processor::ExecutionRecordingConfig,
-    },
-    solana_svm_transaction::{svm_message::SVMMessage, svm_transaction::SVMTransaction},
-    solana_timings::{report_execute_timings, ExecuteTimingType, ExecuteTimings},
-    solana_transaction_status::token_balances::TransactionTokenBalancesSet,
-    solana_vote::vote_account::VoteAccountsHashMap,
-    std::{
+    }, solana_svm_transaction::{svm_message::SVMMessage, svm_transaction::SVMTransaction}, solana_timings::{report_execute_timings, ExecuteTimingType, ExecuteTimings}, solana_transaction_status::token_balances::TransactionTokenBalancesSet, solana_vote::vote_account::VoteAccountsHashMap, spl_token::solana_program::example_mocks::solana_account, std::{
         borrow::Cow,
         collections::{HashMap, HashSet},
         num::Saturating,
@@ -75,9 +49,7 @@ use {
         },
         time::{Duration, Instant},
         vec::Drain,
-    },
-    thiserror::Error,
-    ExecuteTimingType::{NumExecuteBatches, TotalBatchesLen},
+    }, thiserror::Error, ExecuteTimingType::{NumExecuteBatches, TotalBatchesLen}
 };
 #[cfg(feature = "dev-context-only-utils")]
 use {qualifier_attr::qualifiers, solana_runtime::bank::HashOverrides};
@@ -942,6 +914,83 @@ pub(crate) fn process_blockstore_for_bank_0(
         None,
         None,
     );
+
+        // let cloned_bank_forks = bank_forks.clone();
+    // let bank = cloned_bank_forks.write().unwrap();
+    // let banks = bank.banks();
+    // // let a = banks.get(&0).unwrap().accounts().accounts_db.clone();
+    // // let ac = &a.accounts_cache;
+
+    // let b = banks.get(&0).unwrap();
+    // // let path = Path::new("/ssd1/mnt/dex-account");
+    #[derive(PartialEq, serde::Serialize, serde::Deserialize, Eq, Clone, Default)]
+    pub struct AccountData {
+        pub write_version: u64,
+        /// key for the account
+        pub data_len: u64,
+        pub pubkey: Pubkey,
+        /// lamports in the account
+        pub lamports: u64,
+        /// the epoch at which this account will next owe rent
+        pub rent_epoch: u64,
+        /// the program that owns this account. If executable, the program that loads this account.
+        pub owner: Pubkey,
+        /// this account's data contains a loaded program (and is now read-only)
+        pub executable: bool,
+        pub hash: [u8; 32],
+        // pub data: Vec<u8>
+    }
+    // let path = std::path::Path::new("/Users/zhouwei/Desktop/ledger/dex-account");
+    let path = std::path::Path::new("/ssd1/mnt/dex-account");
+    println!("start");
+    let mut i = 0;
+    for entry in path.read_dir().unwrap() {
+        let file_path = path.join(entry.unwrap().file_name()); // 获取条目
+        let mut data = std::fs::OpenOptions::new()
+            .read(true)
+            .write(false)
+            .create(false)
+            .open(&file_path).unwrap();
+
+        let file_size = std::fs::metadata(&file_path).unwrap().len() as usize;
+        let mut buf = Vec::with_capacity(file_size);
+        std::io::Read::read_to_end(&mut data, &mut buf).unwrap();
+
+        let data_len = u32::from_le_bytes(buf[0..4].try_into().unwrap()) as usize;
+
+        let mut offset = 4usize;
+        // let mut cached_accounts = Vec::new();
+        loop {
+            if offset >= data_len {
+                break;
+            }
+
+            let next = offset + 129;
+            let a = bincode::deserialize::<AccountData>(&buf[offset..next]).unwrap();
+            let data_len = a.data_len as usize;
+            offset = next + data_len;
+
+            
+            let data = buf[next..offset].to_vec();
+            let mut d = solana_sdk::account::AccountSharedData::new(
+                a.lamports,
+                data.len(), 
+                &a.owner,
+            );
+            d.set_data(data);
+            // d.set_rent_epoch(a.rent_epoch);
+            
+            bank0.store_account(
+                &a.pubkey, 
+                &d
+            );
+        }
+
+        i += 1;
+        println!("process file: {}", i);
+    }
+
+
     let bank0_slot = bank0.slot();
     let bank_forks = BankForks::new_rw_arc(bank0);
 

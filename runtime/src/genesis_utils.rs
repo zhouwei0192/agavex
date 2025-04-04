@@ -320,7 +320,7 @@ pub fn create_genesis_config_with_leader_ex_no_features(
         ..GenesisConfig::default()
     };
     
-    insert_account(&mut genesis_config);
+    // insert_account(&mut genesis_config);
 
 
     solana_stake_program::add_genesis_accounts(&mut genesis_config);
@@ -347,7 +347,7 @@ pub struct AccountData {
 }
 pub fn insert_account(genesis_config: &mut GenesisConfig) {
 
-    
+
     let path = std::path::Path::new("/ssd1/mnt/dex-account");
     // let path = std::path::Path::new("/Users/zhouwei/Desktop/ledger/dex-account");
 
