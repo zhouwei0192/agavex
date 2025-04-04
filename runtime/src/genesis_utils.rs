@@ -320,7 +320,7 @@ pub fn create_genesis_config_with_leader_ex_no_features(
         ..GenesisConfig::default()
     };
     
-    // insert_account(&mut genesis_config);
+    insert_account(&mut genesis_config);
 
 
     solana_stake_program::add_genesis_accounts(&mut genesis_config);
@@ -328,73 +328,69 @@ pub fn create_genesis_config_with_leader_ex_no_features(
     genesis_config
 }
 
-// #[derive(PartialEq, serde::Serialize, serde::Deserialize, Eq, Clone, Default)]
-// pub struct AccountData {
-//     pub write_version: u64,
-//     /// key for the account
-//     pub data_len: u64,
-//     pub pubkey: Pubkey,
-//     /// lamports in the account
-//     pub lamports: u64,
-//     /// the epoch at which this account will next owe rent
-//     pub rent_epoch: u64,
-//     /// the program that owns this account. If executable, the program that loads this account.
-//     pub owner: Pubkey,
-//     /// this account's data contains a loaded program (and is now read-only)
-//     pub executable: bool,
-//     pub hash: [u8; 32],
-//     // pub data: Vec<u8>
-// }
-// pub fn insert_account(genesis_config: &mut GenesisConfig) {
-//     let path = Path::new("/ssd1/mnt/dex-account");
-//     // let path = Path::new("/Users/zhouwei/Desktop/ledger/dex-account");
+#[derive(PartialEq, serde::Serialize, serde::Deserialize, Eq, Clone, Default)]
+pub struct AccountData {
+    pub write_version: u64,
+    /// key for the account
+    pub data_len: u64,
+    pub pubkey: Pubkey,
+    /// lamports in the account
+    pub lamports: u64,
+    /// the epoch at which this account will next owe rent
+    pub rent_epoch: u64,
+    /// the program that owns this account. If executable, the program that loads this account.
+    pub owner: Pubkey,
+    /// this account's data contains a loaded program (and is now read-only)
+    pub executable: bool,
+    pub hash: [u8; 32],
+    // pub data: Vec<u8>
+}
+pub fn insert_account(genesis_config: &mut GenesisConfig) {
+    let path = std::path::Path::new("/ssd1/mnt/dex-account");
+    // let path = std::path::Path::new("/Users/zhouwei/Desktop/ledger/dex-account");
 
-//     println!("start");
-//     let mut i = 0;
-//     for entry in path.read_dir().unwrap() {
-//         let file_path = path.join(entry.unwrap().file_name()); // 获取条目
-//         // println!("file path: {}", file_path.to_str().unwrap());
-//         let mut data = OpenOptions::new()
-//             .read(true)
-//             .write(false)
-//             .create(false)
-//             .open(&file_path).unwrap();
+    println!("start");
+    let mut i = 0;
+    for entry in path.read_dir().unwrap() {
+        let file_path = path.join(entry.unwrap().file_name()); // 获取条目
+        // println!("file path: {}", file_path.to_str().unwrap());
+        let mut data = std::fs::OpenOptions::new()
+            .read(true)
+            .write(false)
+            .create(false)
+            .open(&file_path).unwrap();
 
-//         let file_size = std::fs::metadata(&file_path).unwrap().len() as usize;
-//         let mut buf = Vec::with_capacity(file_size);
-//         data.read_to_end(&mut buf).unwrap();
+        let file_size = std::fs::metadata(&file_path).unwrap().len() as usize;
+        let mut buf = Vec::with_capacity(file_size);
+        std::io::Read::read_to_end(&mut data, &mut buf).unwrap();
 
 
-//         // let mut list = Vec::with_capacity(10000);
-//         let data_len = u32::from_le_bytes(buf[0..4].try_into().unwrap()) as usize;
+        // let mut list = Vec::with_capacity(10000);
+        let data_len = u32::from_le_bytes(buf[0..4].try_into().unwrap()) as usize;
 
-//         let mut offset = 4usize;
-//         loop {
-//             if offset >= data_len {
-//                 break;
-//             }
+        let mut offset = 4usize;
+        loop {
+            if offset >= data_len {
+                break;
+            }
 
-//             let next = offset + 129;
-//             let a = bincode::deserialize::<AccountData>(&buf[offset..next]).unwrap();
-//             let data_len = a.data_len as usize;
-//             offset = next + data_len;
-//             // list.push((
-//             //     a,
-//             //     buf[next..offset].to_vec()
-//             // ));
+            let next = offset + 129;
+            let a = bincode::deserialize::<AccountData>(&buf[offset..next]).unwrap();
+            let data_len = a.data_len as usize;
+            offset = next + data_len;
 
-//             genesis_config.accounts.insert(a.pubkey, Account {
-//                 lamports: a.lamports,
-//                 data: buf[next..offset].to_vec(),
-//                 owner: a.owner,
-//                 executable: a.executable,
-//                 rent_epoch: a.rent_epoch,
-//             });
-//         }
-//         i += 1;
-//         println!("process file: {}", i);
-//     }
-// }
+            genesis_config.accounts.insert(a.pubkey, Account {
+                lamports: a.lamports,
+                data: buf[next..offset].to_vec(),
+                owner: a.owner,
+                executable: a.executable,
+                rent_epoch: 0,
+            });
+        }
+        i += 1;
+        println!("process file: {}", i);
+    }
+}
 
 
 #[allow(clippy::too_many_arguments)]

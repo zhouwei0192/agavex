@@ -52,7 +52,11 @@ enum Output {
 /*
 
 cargo run --bin solana-test-validator -- --ledger /ssd1/mnt/ledger --warp-slot 330328380 --limit-ledger-size 1000000
-cargo run --bin solana-test-validator -- --ledger /Users/zhouwei/Desktop/ledger/localhost-data --limit-ledger-size 1000000 --reset
+cargo run --bin solana-test-validator -- \
+    --ledger /Users/zhouwei/Desktop/ledger/localhost-data 
+    --limit-ledger-size 1000000 \
+    --bpf-program ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL ata.so \
+    --reset
 
 */ 
 
@@ -70,8 +74,8 @@ fn main() {
     };
 
     // let ledger_path = value_t_or_exit!(matches, "ledger_path", PathBuf);
-    // let ledger_path = PathBuf::from("/Users/zhouwei/Desktop/ledger/localhost-data");
-    let ledger_path = PathBuf::from("/Users/zhouwei/Desktop/ledger/test-data");
+    let ledger_path = PathBuf::from("/Users/zhouwei/Desktop/ledger/localhost-data");
+    // let ledger_path = PathBuf::from("/Users/zhouwei/Desktop/ledger/test-data");
 
     let reset_ledger = matches.is_present("reset");
 
