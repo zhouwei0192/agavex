@@ -37,18 +37,10 @@ use {
         transaction_processing_result::{ProcessedTransaction, TransactionProcessingResult},
         transaction_processor::ExecutionRecordingConfig,
     }, solana_svm_transaction::{svm_message::SVMMessage, svm_transaction::SVMTransaction}, solana_timings::{report_execute_timings, ExecuteTimingType, ExecuteTimings}, solana_transaction_status::token_balances::TransactionTokenBalancesSet, solana_vote::vote_account::VoteAccountsHashMap, spl_token::solana_program::example_mocks::solana_account, std::{
-        borrow::Cow,
-        collections::{HashMap, HashSet},
-        num::Saturating,
-        ops::Index,
-        path::PathBuf,
-        result,
-        sync::{
+        borrow::Cow, collections::{HashMap, HashSet}, num::Saturating, ops::Index, path::PathBuf, result, str::FromStr, sync::{
             atomic::{AtomicBool, Ordering::Relaxed},
             Arc, Mutex, RwLock,
-        },
-        time::{Duration, Instant},
-        vec::Drain,
+        }, time::{Duration, Instant}, vec::Drain
     }, thiserror::Error, ExecuteTimingType::{NumExecuteBatches, TotalBatchesLen}
 };
 #[cfg(feature = "dev-context-only-utils")]
@@ -989,6 +981,18 @@ pub(crate) fn process_blockstore_for_bank_0(
         i += 1;
         println!("process file: {}", i);
     }
+
+    let mut d = solana_sdk::account::AccountSharedData::new(
+        1,
+        21, 
+        &Pubkey::from_str("NativeLoader1111111111111111111111111111111").unwrap(),
+    );
+    d.set_data(vec![115, 111, 108, 97, 110, 97, 95, 115, 121, 115, 116, 101, 109, 95, 112, 114, 111, 103, 114, 97, 109]);
+    d.set_executable(true);    
+    bank0.store_account(
+        &Pubkey::from_str("11111111111111111111111111111111").unwrap(), 
+        &d
+    );
 
 
     let bank0_slot = bank0.slot();
